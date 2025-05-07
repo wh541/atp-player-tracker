@@ -16,47 +16,38 @@ searchBtn.addEventListener("click", () => {
 });
 
 function fetchPlayerInfo(name) {
-  // Use the search endpoint to find player ID
-  fetch(`https://api.api-tennis.com/tennis/?method=get_players&name=${encodeURIComponent(name)}&APIkey=${apiKey}`)
+  const url = `https://api.api-tennis.com/tennis/?method=get_players&name=${encodeURIComponent(name)}&APIkey=${apiKey}`;
+
+  fetch(url)
     .then(response => response.json())
     .then(data => {
-      const player = data.players[0];
-      if (player) {
-        document.getElementById("playerName").textContent = `${player.firstname} ${player.lastname}`;
-        document.getElementById("playerCountry").textContent = player.country;
-        document.getElementById("playerRank").textContent = player.rank;
-        document.getElementById("playerPoints").textContent = player.points;
-        document.getElementById("player-info").classList.remove("hidden");
+      console.log("Player API response:", data);
 
-        fetchRecentMatches(player.player_key);
-      } else {
-        alert("Player not found.");
+      if (!data.players || data.players.length === 0) {
+        alert("Player not found. Try using full name (e.g., Rafael Nadal).");
+        return;
       }
+
+      const player = data.players[0];
+
+      document.getElementById("playerName").textContent = `${player.firstname} ${player.lastname}`;
+      document.getElementById("playerCountry").textContent = player.country;
+      document.getElementById("playerRank").textContent = player.rank;
+      document.getElementById("playerPoints").textContent = player.points;
+      document.getElementById("player-info").classList.remove("hidden");
+
+      fetchRecentMatches(player.player_key);
     })
     .catch(error => {
-      console.error("Error fetching player:", error);
-      alert("Something went wrong.");
+      console.error("Fetch error:", error);
+      alert("Something went wrong. Check the console.");
     });
 }
 
 function fetchRecentMatches(playerKey) {
-  fetch(`https://api.api-tennis.com/tennis/?method=get_results&player_key=${playerKey}&APIkey=${apiKey}`)
+  const url = `https://api.api-tennis.com/tennis/?method=get_results&player_key=${playerKey}&APIkey=${apiKey}`;
+
+  fetch(url)
     .then(response => response.json())
-    .then(data => {
-      const matchList = document.getElementById("matchList");
-      matchList.innerHTML = "";
-      if (data.result) {
-        data.result.slice(0, 5).forEach(match => {
-          const li = document.createElement("li");
-          li.textContent = `${match.event} - ${match.event_date} - ${match.score}`;
-          matchList.appendChild(li);
-        });
-        document.getElementById("matches").classList.remove("hidden");
-      } else {
-        matchList.innerHTML = "<li>No recent matches found.</li>";
-      }
-    })
-    .catch(error => {
-      console.error("Error fetching matches:", error);
-    });
-}
+    .then(data
+
