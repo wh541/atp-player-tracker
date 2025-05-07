@@ -30,16 +30,27 @@ function fetchPlayerInfo(name) {
       }
 
       const player = data.result[0];
+      console.log("👤 Player object:", player);
 
-      // Update HTML
-      document.getElementById("playerName").textContent = `${player.firstname} ${player.lastname}`;
-      document.getElementById("playerCountry").textContent = player.country;
-      document.getElementById("playerRank").textContent = player.rank;
-      document.getElementById("playerPoints").textContent = player.points;
+      const playerName = player.player_name || `${player.firstname || ""} ${player.lastname || ""}`;
+      const country = player.country || "N/A";
+      const rank = player.ranking || player.rank || "N/A";
+      const points = player.points || "N/A";
+      const playerKey = player.player_key;
+
+      document.getElementById("playerName").textContent = playerName.trim();
+      document.getElementById("playerCountry").textContent = country;
+      document.getElementById("playerRank").textContent = rank;
+      document.getElementById("playerPoints").textContent = points;
       document.getElementById("player-info").classList.remove("hidden");
 
-      // Now get their match history
-      fetchRecentMatches(player.player_key);
+      if (playerKey) {
+        console.log("📌 Using player_key:", playerKey);
+        fetchRecentMatches(playerKey);
+      } else {
+        console.warn("⚠️ No player_key found — cannot fetch matches.");
+        alert("No match data available for this player.");
+      }
     })
     .catch(error => {
       console.error("❌ Error fetching player:", error);
@@ -65,8 +76,12 @@ function fetchRecentMatches(playerKey) {
       }
 
       data.result.slice(0, 5).forEach(match => {
+        const event = match.event || match.tournament_name || "Unknown Tournament";
+        const date = match.event_date || match.date || "Unknown Date";
+        const score = match.score || "Score not available";
+
         const li = document.createElement("li");
-        li.textContent = `${match.event} — ${match.event_date} — ${match.score}`;
+        li.textContent = `${event} — ${date} — ${score}`;
         matchList.appendChild(li);
       });
 
