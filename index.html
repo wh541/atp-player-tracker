@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATP Player Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🎾 ATP Player Tracker</h1>
+  </header>
+
+  <main>
+    <input type="text" id="playerSearch" placeholder="Enter player name..." />
+    <button id="searchBtn">Search</button>
+
+    <section id="player-info" class="hidden">
+      <h2 id="playerName"></h2>
+      <p><strong>Country:</strong> <span id="playerCountry"></span></p>
+      <p><strong>Ranking:</strong> <span id="playerRank"></span></p>
+      <p><strong>Points:</strong> <span id="playerPoints"></span></p>
+    </section>
+
+    <section id="matches" class="hidden">
+      <h3>Recent Matches</h3>
+      <ul id="matchList"></ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
