@@ -1,7 +1,7 @@
 let apiKey = sessionStorage.getItem("apiKey");
 
 if (!apiKey) {
-  apiKey = prompt("Enter your API-Tennis key:");
+  apiKey = prompt("Enter your SportsDataIO API key:");
   sessionStorage.setItem("apiKey", apiKey);
 }
 
@@ -16,80 +16,42 @@ searchBtn.addEventListener("click", () => {
 });
 
 function fetchPlayerInfo(name) {
-  const url = `https://api.api-tennis.com/tennis/?method=get_players&name=${encodeURIComponent(name)}&APIkey=${apiKey}`;
-  console.log("🔍 Fetching player from:", url);
+  const url = `https://api.sportsdata.io/v4/tennis/scores/json/Players`;
+  console.log("🔍 Fetching player list...");
 
-  fetch(url)
-    .then(response => response.json())
+  fetch(url, {
+    headers: {
+      "Ocp-Apim-Subscription-Key": apiKey
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("API request failed. Check your key or quota.");
+      }
+      return response.json();
+    })
     .then(data => {
-      console.log("📦 Player API response:", data);
+      console.log("✅ Player list retrieved:", data);
 
-      if (data.error === "1" || !data.result || data.result.length === 0) {
-        alert("Player not found or API error. Try a different name.");
+      const player = data.find(p =>
+        `${p.FirstName.toLowerCase()} ${p.LastName.toLowerCase()}` === name.toLowerCase()
+      );
+
+      if (!player) {
+        alert("Player not found. Try the full name exactly.");
         return;
       }
 
-      const player = data.result[0];
-      console.log("👤 Player object:", player);
+      console.log("🎾 Found player:", player);
 
-      const fullName = `${player.firstname || ""} ${player.lastname || ""}`.trim();
-      const country = player.country || "N/A";
-      const rank = player.ranking || player.rank || "N/A";
-      const points = player.points || "N/A";
-      const playerId = player.player_id;
-
-      document.getElementById("playerName").textContent = fullName;
-      document.getElementById("playerCountry").textContent = country;
-      document.getElementById("playerRank").textContent = rank;
-      document.getElementById("playerPoints").textContent = points;
-      document.getElementById("player-info").classList.remove("hidden");
-
-      if (playerId) {
-        console.log("📌 Using player_id:", playerId);
-        fetchRecentMatches(playerId);
-      } else {
-        console.warn("⚠️ No player_id found — cannot fetch matches.");
-        alert("No match data available for this player.");
-      }
+      document.getElementById("playerName").textContent = `${player.FirstName} ${player.LastName}`;
+      document.getElementById("playerCountry").textContent = player.Country || "N/A";
+      document.getElementById("playerRanking").textContent = player.Rank || "N/A";
+      document.getElementById("playerPoints").textContent = player.RankPoints || "N/A";
     })
     .catch(error => {
-      console.error("❌ Error fetching player:", error);
-      alert("Something went wrong. Please check the console.");
-    });
-}
-
-function fetchRecentMatches(playerId) {
-  const url = `https://api.api-tennis.com/tennis/?method=get_results&player_id=${playerId}&APIkey=${apiKey}`;
-  console.log("🎾 Fetching match results from:", url);
-
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      console.log("📦 Match API response:", data);
-
-      const matchList = document.getElementById("matchList");
-      matchList.innerHTML = "";
-
-      if (!data.result || data.result.length === 0) {
-        matchList.innerHTML = "<li>No recent matches found.</li>";
-        return;
-      }
-
-      data.result.slice(0, 5).forEach(match => {
-        const event = match.event || match.tournament_name || "Unknown Tournament";
-        const date = match.event_date || match.date || "Unknown Date";
-        const score = match.score || "Score not available";
-
-        const li = document.createElement("li");
-        li.textContent = `${event} — ${date} — ${score}`;
-        matchList.appendChild(li);
-      });
-
-      document.getElementById("matches").classList.remove("hidden");
-    })
-    .catch(error => {
-      console.error("❌ Match fetch error:", error);
-      alert("Error loading match data.");
+      console.error("❌ Fetch error:", error);
+      alert("Error fetching player info. Check your API key or internet connection.");
     });
 }
 
